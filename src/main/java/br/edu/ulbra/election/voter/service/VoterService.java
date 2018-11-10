@@ -27,6 +27,7 @@ public class VoterService {
 
     private static final String MESSAGE_INVALID_ID = "Invalid id";
     private static final String MESSAGE_VOTER_NOT_FOUND = "Voter not found";
+    private static final String MESSAGE_EMAIL_ALREADY = "Email Already Exists";
 
     @Autowired
     public VoterService(VoterRepository voterRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder){
@@ -97,6 +98,9 @@ public class VoterService {
     }
 
     private void validateInput(VoterInput voterInput, boolean isUpdate){
+        if(!(voterRepository.findByEmail(voterInput.getEmail()) == null))
+            throw new GenericOutputException("Email Already Exists");
+
         if (StringUtils.isBlank(voterInput.getEmail())){
             throw new GenericOutputException("Invalid email");
         }
