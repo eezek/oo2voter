@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,10 +31,10 @@ public class VoterService {
     private static final String MESSAGE_EMAIL_ALREADY = "Email Already Exists";
 
     @Autowired
-    public VoterService(VoterRepository voterRepository, ModelMapper modelMapper, PasswordEncoder passwordEncoder){
+    public VoterService(VoterRepository voterRepository, ModelMapper modelMapper){
         this.voterRepository = voterRepository;
         this.modelMapper = modelMapper;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = new MessageDigestPasswordEncoder("MD5");
     }
 
     public List<VoterOutput> getAll(){
@@ -99,7 +100,7 @@ public class VoterService {
 
     private void validateInput(VoterInput voterInput, boolean isUpdate){
         if(!(voterRepository.findByEmail(voterInput.getEmail()) == null))
-            throw new GenericOutputException("Email Already Exists");
+            throw new GenericOutputException(MESSAGE_EMAIL_ALREADY);
 
         if (StringUtils.isBlank(voterInput.getEmail())){
             throw new GenericOutputException("Invalid email");
