@@ -10,10 +10,12 @@ import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.validation.ConstraintViolationException;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -47,7 +49,15 @@ public class VoterService {
         validateInput(voterInput, false);
         Voter voter = modelMapper.map(voterInput, Voter.class);
         voter.setPassword(passwordEncoder.encode(voter.getPassword()));
-        voter = voterRepository.save(voter);
+
+        try{
+            voter = voterRepository.save(voter);
+        }catch (Exception e)
+        {
+            if(e instanceof DataIntegrityViolationException)
+                throw new GenericOutputException(MESSAGE_EMAIL_ALREADY);
+        }
+
         return modelMapper.map(voter, VoterOutput.class);
     }
 
@@ -80,7 +90,13 @@ public class VoterService {
         if (!StringUtils.isBlank(voterInput.getPassword())) {
             voter.setPassword(passwordEncoder.encode(voterInput.getPassword()));
         }
-        voter = voterRepository.save(voter);
+        try{
+            voter = voterRepository.save(voter);
+        }catch (Exception e){
+            if(e instanceof DataIntegrityViolationException)
+                throw new GenericOutputException(MESSAGE_EMAIL_ALREADY);
+        }
+
         return modelMapper.map(voter, VoterOutput.class);
     }
 
@@ -100,9 +116,6 @@ public class VoterService {
     }
 
     private void validateInput(VoterInput voterInput, boolean isUpdate){
-        if(!(voterRepository.findByEmail(voterInput.getEmail()) == null))
-            throw new GenericOutputException(MESSAGE_EMAIL_ALREADY);
-
         if (StringUtils.isBlank(voterInput.getEmail()))
             throw new GenericOutputException("Invalid email");
 
