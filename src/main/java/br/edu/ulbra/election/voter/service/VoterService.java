@@ -1,5 +1,6 @@
 package br.edu.ulbra.election.voter.service;
 
+import br.edu.ulbra.election.voter.client.ElectionClientService;
 import br.edu.ulbra.election.voter.exception.GenericOutputException;
 import br.edu.ulbra.election.voter.input.v1.VoterInput;
 import br.edu.ulbra.election.voter.model.Voter;
@@ -27,17 +28,18 @@ public class VoterService {
     private final ModelMapper modelMapper;
 
     private final PasswordEncoder passwordEncoder;
-
+    private final ElectionClientService electionClientService;
     private static final String MESSAGE_INVALID_ID = "Invalid id";
     private static final String MESSAGE_VOTER_NOT_FOUND = "Voter not found";
     private static final String MESSAGE_INVALID_NAME = "Invalid name";
     private static final String MESSAGE_EMAIL_ALREADY = "Email Already Exists";
 
     @Autowired
-    public VoterService(VoterRepository voterRepository, ModelMapper modelMapper){
+    public VoterService(VoterRepository voterRepository, ModelMapper modelMapper, ElectionClientService electionClientService){
         this.voterRepository = voterRepository;
         this.modelMapper = modelMapper;
         this.passwordEncoder = new MessageDigestPasswordEncoder("MD5");
+        this.electionClientService = electionClientService;
     }
 
     public List<VoterOutput> getAll(){
@@ -109,6 +111,9 @@ public class VoterService {
         if (voter == null){
             throw new GenericOutputException(MESSAGE_VOTER_NOT_FOUND);
         }
+
+        if(electionClientService.hasVotes(voterId).contains("true"))
+            throw new GenericOutputException("Not Authorized");
 
         voterRepository.delete(voter);
 
