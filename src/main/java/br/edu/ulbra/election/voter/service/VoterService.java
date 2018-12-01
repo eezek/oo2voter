@@ -35,10 +35,10 @@ public class VoterService {
     private static final String MESSAGE_EMAIL_ALREADY = "Email Already Exists";
 
     @Autowired
-    public VoterService(VoterRepository voterRepository, ModelMapper modelMapper, ElectionClientService electionClientService){
+    public VoterService(VoterRepository voterRepository, ModelMapper modelMapper, ElectionClientService electionClientService, PasswordEncoder passwordEncoder){
         this.voterRepository = voterRepository;
         this.modelMapper = modelMapper;
-        this.passwordEncoder = new MessageDigestPasswordEncoder("MD5");
+        this.passwordEncoder = passwordEncoder;
         this.electionClientService = electionClientService;
     }
 
